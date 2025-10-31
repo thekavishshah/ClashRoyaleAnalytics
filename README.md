@@ -1,1 +1,1 @@
-# ClashRoyaleAnalytics
+A sample Analyzer tracker
