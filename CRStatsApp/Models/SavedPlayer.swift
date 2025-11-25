@@ -4,7 +4,6 @@
 //
 //  Created by Kavish Shah on 10/28/25.
 //
-
 import Foundation
 import SwiftData
 
@@ -12,10 +11,15 @@ import SwiftData
 class SavedPlayer {
     var tag: String
     var name: String
+    var trophies: Int
     var savedAt: Date
-    init(tag: String, name: String, savedAt: Date = .now) {
+    var lastUpdated: Date?
+    
+    init(tag: String, name: String, trophies: Int = 0, savedAt: Date = .now, lastUpdated: Date = .now) {
         self.tag = tag
         self.name = name
+        self.trophies = trophies
         self.savedAt = savedAt
+        self.lastUpdated = lastUpdated
     }
 }

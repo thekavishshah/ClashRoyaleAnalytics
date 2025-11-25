@@ -6,26 +6,50 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
-final class PlayerViewModel: ObservableObject {
-    @Published var queryTag: String = ""
-    @Published var player: PlayerDTO?
-    @Published var battles: [BattleDTO] = []
+class PlayerViewModel: ObservableObject {
+    @Published var currentPlayer: PlayerDTO?
     @Published var isLoading = false
-    @Published var error: String?
-    func loadAll() async {
-        guard !queryTag.isEmpty else { return }
+    @Published var errorMessage: String?
+    @Published var recentlyViewedTags: [String] = []
+    
+    private let api = ClashAPI.shared
+    private let maxRecentTags = 10
+    
+    func fetchPlayer(tag: String) async {
         isLoading = true
-        error = nil
+        errorMessage = nil
+        
         do {
-            let p = try await ClashAPI.shared.player(tag: queryTag)
-            let b = try await ClashAPI.shared.battles(tag: queryTag)
-            player = p
-            battles = b
+            let player = try await api.fetchPlayer(tag: tag)
+            self.currentPlayer = player
+            addToRecentlyViewed(tag: tag)
         } catch {
-            self.error = String(describing: error)
+            self.errorMessage = error.localizedDescription
+            print("Error fetching player: \(error)")
         }
+        
         isLoading = false
+    }
+    
+    func refreshCurrentPlayer() async {
+        guard let tag = currentPlayer?.tag else { return }
+        await fetchPlayer(tag: tag)
+    }
+    
+    private func addToRecentlyViewed(tag: String) {
+        if let index = recentlyViewedTags.firstIndex(of: tag) {
+            recentlyViewedTags.remove(at: index)
+        }
+        recentlyViewedTags.insert(tag, at: 0)
+        if recentlyViewedTags.count > maxRecentTags {
+            recentlyViewedTags.removeLast()
+        }
+    }
+    
+    func clearError() {
+        errorMessage = nil
     }
 }
